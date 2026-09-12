@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -74,5 +75,56 @@ public class RegistryIT {
 
         // Assert: la unicidad la garantiza la base de datos, no el mock
         assertEquals(RegisterResult.DUPLICATED, result2);
+    }
+
+    @Test
+    public void shouldReturnUnderageWhenPersonIsMinor() throws Exception {
+        // Arrange
+        Person p = new Person("Sara", 105, 17, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert: ni el resultado ni la persistencia deben ocurrir
+        assertEquals(RegisterResult.UNDERAGE, result);
+        assertFalse(repo.existsById(105));
+    }
+
+    @Test
+    public void shouldReturnInvalidAgeWhenAgeIsImpossible() throws Exception {
+        // Arrange
+        Person p = new Person("Pedro", 106, 121, Gender.MALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID_AGE, result);
+        assertFalse(repo.existsById(106));
+    }
+
+    @Test
+    public void shouldReturnDeadWhenPersonIsNotAlive() throws Exception {
+        // Arrange
+        Person p = new Person("Laura", 107, 50, Gender.FEMALE, false);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert
+        assertEquals(RegisterResult.DEAD, result);
+        assertFalse(repo.existsById(107));
+    }
+
+    @Test
+    public void shouldReturnInvalidWhenIdIsNotPositive() throws Exception {
+        // Arrange
+        Person p = new Person("Eva", 0, 30, Gender.FEMALE, true);
+
+        // Act
+        RegisterResult result = registry.registerVoter(p);
+
+        // Assert
+        assertEquals(RegisterResult.INVALID, result);
     }
 }

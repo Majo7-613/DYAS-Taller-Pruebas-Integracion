@@ -4,6 +4,7 @@ import edu.unisabana.tyvs.registry.application.usecase.RegistryPersistenceExcept
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -30,6 +31,16 @@ public class RegistryExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<String> handleMalformedJson(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest().body("MALFORMED_JSON");
+    }
+
+    /**
+     * DTO sintacticamente valido pero con datos semanticamente invalidos
+     * (ej. "name" o "gender" en blanco). 422: la sintaxis esta bien, el
+     * significado no (RFC 9110), a diferencia del 400 de JSON mal formado.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleBeanValidation(MethodArgumentNotValidException ex) {
+        return ResponseEntity.unprocessableEntity().body("VALIDATION_ERROR");
     }
 
     /** Fallo real de infraestructura: aqui si corresponde un 5xx. */

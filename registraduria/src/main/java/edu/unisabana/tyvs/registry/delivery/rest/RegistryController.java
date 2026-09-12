@@ -9,6 +9,8 @@ import edu.unisabana.tyvs.registry.domain.model.rq.PersonDTO;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/register")
 public class RegistryController {
@@ -21,7 +23,7 @@ public class RegistryController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-    public String register(@RequestBody PersonDTO dto) {
+    public String register(@Valid @RequestBody PersonDTO dto) {
         Person p = new Person(dto.getName(), dto.getId(), dto.getAge(),
                 Gender.valueOf(dto.getGender()), dto.isAlive());
         RegisterResult r = registry.registerVoter(p);   

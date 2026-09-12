@@ -1,9 +1,13 @@
 package edu.unisabana.tyvs.registry.domain.model.rq;
 
+import javax.validation.constraints.NotBlank;
+
 public class PersonDTO {
+    @NotBlank(message = "name es obligatorio")
     private String name;
     private int id;
     private int age;
+    @NotBlank(message = "gender es obligatorio")
     private String gender;
     private boolean alive;
 

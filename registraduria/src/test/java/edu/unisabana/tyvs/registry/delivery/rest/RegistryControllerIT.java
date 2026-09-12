@@ -105,4 +105,62 @@ public class RegistryControllerIT {
 
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
     }
+
+    @Test
+    public void shouldReturnInvalidAgeWhenAgeIsImpossible() {
+        ResponseEntity<String> resp = register(
+                "{\"name\":\"Marta\",\"id\":105,\"age\":121,\"gender\":\"FEMALE\",\"alive\":true}");
+
+        // INVALID_AGE es un resultado de negocio normal, no un error del cliente:
+        // el servidor sigue respondiendo 200, el estado va en el cuerpo.
+        assertEquals(HttpStatus.OK, resp.getStatusCode());
+        assertEquals("INVALID_AGE", resp.getBody());
+    }
+
+    @Test
+    public void shouldReturnInvalidWhenIdIsNotPositive() {
+        ResponseEntity<String> resp = register(
+                "{\"name\":\"Nico\",\"id\":0,\"age\":30,\"gender\":\"MALE\",\"alive\":true}");
+
+        assertEquals(HttpStatus.OK, resp.getStatusCode());
+        assertEquals("INVALID", resp.getBody());
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenJsonIsMalformed() {
+        // Llave sin cerrar: HttpMessageNotReadableException, no IllegalArgumentException.
+        ResponseEntity<String> resp = register(
+                "{\"name\":\"Rota\",\"id\":106,\"age\":30,\"gender\":\"FEMALE\",\"alive\":true");
+
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals("MALFORMED_JSON", resp.getBody());
+    }
+
+    /**
+     * Defecto 01 (ver defectos.md): sin "gender", Gender.valueOf(null) lanza
+     * NullPointerException, que ningun @ExceptionHandler existente atrapaba
+     * antes de anadir @Valid + @NotBlank en PersonDTO.gender.
+     */
+    @Test
+    public void shouldReturnValidationErrorWhenGenderIsMissing() {
+        ResponseEntity<String> resp = register(
+                "{\"name\":\"Eva\",\"id\":108,\"age\":30,\"alive\":true}");
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, resp.getStatusCode());
+        assertEquals("VALIDATION_ERROR", resp.getBody());
+    }
+
+    /**
+     * Defecto 02 (ver defectos.md): "name" vacio llegaba hasta el INSERT y
+     * violaba el NOT NULL de H2, reportandose como fallo de persistencia
+     * (503) en vez de un dato invalido del cliente (422).
+     */
+    @Test
+    public void shouldReturnValidationErrorWhenNameIsBlank() {
+        ResponseEntity<String> resp = register(
+                "{\"name\":\"\",\"id\":109,\"age\":30,\"gender\":\"FEMALE\",\"alive\":true}");
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, resp.getStatusCode());
+        assertEquals("VALIDATION_ERROR", resp.getBody());
+    }
 }
