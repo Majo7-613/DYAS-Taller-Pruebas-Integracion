@@ -203,6 +203,40 @@
               <goal>report-integration</goal>
             </goals>
           </execution>
+          <!-- Fusiona jacoco.exec (unitarias) y jacoco-it.exec (integracion/sistema)
+               en un solo archivo: sin esto, "report" y "report-integration" arriba
+               son dos numeros SEPARADOS, ninguno de los cuales es la cobertura
+               global real que pide la rubrica (>=80%). -->
+          <execution>
+            <id>merge-results</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>merge</goal>
+            </goals>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.build.directory}</directory>
+                  <includes>
+                    <include>jacoco.exec</include>
+                    <include>jacoco-it.exec</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>merged-report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged</outputDirectory>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>

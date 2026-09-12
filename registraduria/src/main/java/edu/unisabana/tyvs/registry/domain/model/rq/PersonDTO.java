@@ -14,14 +14,6 @@ public class PersonDTO {
     public PersonDTO() {
     }
 
-    public PersonDTO(String name, int id, int age, String gender, boolean alive) {
-        this.name = name;
-        this.id = id;
-        this.age = age;
-        this.gender = gender;
-        this.alive = alive;
-    }
-
     public String getName() {
         return name;
     }
